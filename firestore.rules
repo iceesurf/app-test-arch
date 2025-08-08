@@ -1,0 +1,54 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Regras para usuários
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Regras para leads
+    match /leads/{leadId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Regras para chatbots
+    match /chatbots/{chatbotId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Regras para campanhas
+    match /ads_campaigns/{campaignId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Regras para solicitações
+    match /solicitacoes/{requestId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Regras para contatos
+    match /contacts/{contactId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Regras para jobs agendados
+    match /scheduled_jobs/{jobId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Regras para notificações
+    match /notifications/{notificationId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Regras para campanhas de email
+    match /email_campaigns/{campaignId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Regras para templates de email
+    match /email_templates/{templateId} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
