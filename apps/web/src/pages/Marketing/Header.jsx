@@ -84,7 +84,7 @@ const Header = () => {
                     </div>
                 </div>
 
-                <button className="mobile-menu-toggle" onClick={toggleMobileMenu}>
+                <button className="mobile-menu-toggle" onClick={toggleMobileMenu} aria-label={isMobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}>
                     <i className={`fas ${isMobileMenuOpen ? 'fa-times' : 'fa-bars'}`}></i>
                 </button>
             </nav>

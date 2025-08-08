@@ -3,13 +3,16 @@ const express = require("express");
 const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 const admin = require("firebase-admin");
+const helmet = require("helmet");
 const {logger, logRequest, logError} = require("./src/utils/logger");
+const {authMiddleware} = require("./src/middleware/auth");
 
 admin.initializeApp();
 
 const app = express();
 
 app.use(cors({origin: true}));
+app.use(helmet());
 app.use(express.json());
 
 // Rate limiting configuration
@@ -29,6 +32,9 @@ app.use(limiter);
 
 // Add request logging middleware
 app.use(logRequest);
+
+// Apply authentication middleware
+app.use(authMiddleware);
 
 // More strict rate limiting for authentication endpoints
 const authLimiter = rateLimit({
@@ -137,10 +143,7 @@ app.use((error, req, res, next) => {
   });
 });
 
-// Exportar funções de autenticação
-exports.registerUser = registerUser;
-
-// Não exportar triggers/handlers legacy de campanhas
+// Não exportar triggers/handlers legacy de campanhas nem múltiplas functions HTTP
 
 exports.api = functions.https.onRequest(
     {

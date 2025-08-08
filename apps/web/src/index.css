@@ -137,6 +137,11 @@ button:focus-visible {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
+/* Cartões e áreas que estavam translúcidas */
+.card, .chatbot-card, .inbox-thread, .inbox-list, .stat-card, .action-card, .recent-leads, .activity-feed, .modal-content {
+  background: var(--card-bg) !important;
+}
+
 /* Controles de formulário globais e acessíveis */
 .form-group input,
 .form-group select,
