@@ -64,11 +64,7 @@ const webhook = require("./src/routes/webhook");
 const conversations = require("./src/routes/conversations");
 const settings = require("./src/routes/settings");
 
-// Importar outras funções
-const {
-  getCampaignMetrics,
-  updateCampaignStatus,
-} = require("./src/ads/schedule-campaign");
+// Importar outras funções (triggers legacy desativadas)
 
 // Rotas da API (sem prefixo)
 router.post("/contacts", createContact);
@@ -144,9 +140,7 @@ app.use((error, req, res, next) => {
 // Exportar funções de autenticação
 exports.registerUser = registerUser;
 
-// Exportar funções de campanhas publicitárias (desativado triggers legacy)
-exports.getCampaignMetrics = getCampaignMetrics;
-exports.updateCampaignStatus = updateCampaignStatus;
+// Não exportar triggers/handlers legacy de campanhas
 
 exports.api = functions.https.onRequest(
     {
