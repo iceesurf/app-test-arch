@@ -1,6 +1,9 @@
 import { signOut } from 'firebase/auth';
 import React, { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import BrandedTitle from '../../components/BrandedTitle';
+import StableLogo from '../../components/StableLogo';
+import { useBranding } from '../../contexts/BrandingContext';
 import { auth } from '../../firebase';
 import './DashboardLayout.css';
 
@@ -9,6 +12,7 @@ const DashboardLayout = () => {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const navigate = useNavigate();
     const location = useLocation();
+    const { branding } = useBranding();
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -50,7 +54,7 @@ const DashboardLayout = () => {
             {/* Sidebar */}
             <aside className={`sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
                 <div className="sidebar-header">
-                    <img src="/logo-nxtai.png" alt="NXT.AI" className="sidebar-logo" />
+                    <StableLogo />
                     <button
                         className="sidebar-toggle"
                         onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -85,9 +89,9 @@ const DashboardLayout = () => {
                 {/* Topbar */}
                 <header className="topbar">
                     <div className="topbar-left">
-                        <h1 className="page-title">
-                            {menuItems.find(item => item.path === location.pathname)?.label || 'Dashboard'}
-                        </h1>
+                        <BrandedTitle
+                            title={menuItems.find(item => item.path === location.pathname)?.label || 'Dashboard'}
+                        />
                     </div>
 
                     <div className="topbar-right">

@@ -1,6 +1,7 @@
 import { onAuthStateChanged } from 'firebase/auth';
 import React, { useEffect, useState } from 'react';
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { BrandingProvider } from './contexts/BrandingContext';
 import { auth } from './firebase';
 
 // Landing Page Components
@@ -91,27 +92,29 @@ const ProtectedRoute = ({ children }) => {
 
 function App() {
     return (
-        <Router>
-            <Routes>
-                {/* Landing Page Route */}
-                <Route path="/" element={<LandingPage />} />
+        <BrandingProvider>
+            <Router>
+                <Routes>
+                    {/* Landing Page Route */}
+                    <Route path="/" element={<LandingPage />} />
 
-                {/* Dashboard Routes */}
-                <Route path="/dashboard" element={
-                    <ProtectedRoute>
-                        <DashboardLayout />
-                    </ProtectedRoute>
-                }>
-                    <Route index element={<Home />} />
-                    <Route path="agent" element={<Agent />} />
-                    <Route path="leads" element={<Leads />} />
-                    <Route path="ads" element={<Ads />} />
-                    <Route path="email" element={<Email />} />
-                    <Route path="requests" element={<Requests />} />
-                    <Route path="settings" element={<Settings />} />
-                </Route>
-            </Routes>
-        </Router>
+                    {/* Dashboard Routes */}
+                    <Route path="/dashboard" element={
+                        <ProtectedRoute>
+                            <DashboardLayout />
+                        </ProtectedRoute>
+                    }>
+                        <Route index element={<Home />} />
+                        <Route path="agent" element={<Agent />} />
+                        <Route path="leads" element={<Leads />} />
+                        <Route path="ads" element={<Ads />} />
+                        <Route path="email" element={<Email />} />
+                        <Route path="requests" element={<Requests />} />
+                        <Route path="settings" element={<Settings />} />
+                    </Route>
+                </Routes>
+            </Router>
+        </BrandingProvider>
     );
 }
 

@@ -148,6 +148,55 @@
     margin: 0;
 }
 
+/* Branded Title */
+.branded-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.title-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.page-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-light);
+    margin: 0;
+}
+
+.page-subtitle {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.brand-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.brand-logo {
+    height: 24px;
+    width: auto;
+    border-radius: 4px;
+}
+
+.brand-name {
+    color: var(--text-light);
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
 .user-info {
     display: flex;
     align-items: center;

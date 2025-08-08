@@ -1,23 +1,8 @@
 {
-  "name": "firebase",
+  "name": "app-arch",
   "version": "1.0.0",
-  "main": "index.js",
   "scripts": {
-    "emulators": "firebase emulators:start ",
-    "deploy": "firebase deploy",
-    "build:marketing": "cd apps/web && npm run build",
-    "deploy:marketing": "firebase deploy --only hosting:marketing"
-  },
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "papaparse": "^5.5.3",
-    "react-dropzone": "^14.3.8",
-    "react-hook-form": "^7.62.0",
-    "react-router-dom": "^7.7.1",
-    "reactflow": "^11.11.4",
-    "recharts": "^3.1.2",
-    "xlsx": "^0.18.5"
+    "dev": "cd apps/web && npm run dev",
+    "build": "cd apps/web && npm run build"
   }
 }

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import WhitelabelSummary from '../../components/WhitelabelSummary';
 import './Home.css';
 // Removido: import { db } from '../../firebase';
 // Removido: import { collection, getDocs, query } from 'firebase/firestore';
@@ -44,6 +45,9 @@ const Home = () => {
 
     return (
         <div className="dashboard-home">
+            {/* Whitelabel Summary */}
+            <WhitelabelSummary />
+
             {/* Welcome Section */}
             <div className="welcome-section">
                 <h1>Bem-vindo ao seu Dashboard</h1>

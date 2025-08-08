@@ -3,15 +3,15 @@ import { connectAuthEmulator, getAuth } from "firebase/auth";
 import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
 import { connectFunctionsEmulator, getFunctions } from "firebase/functions";
 
-// Firebase configuration from environment variables
+// Firebase configuration
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+  apiKey: "AIzaSyCbnUYk7lL8zPsPxYGOSVHn_Rg3ESSWnrU",
+  authDomain: "app-arch-6c99b.firebaseapp.com",
+  projectId: "app-arch-6c99b",
+  storageBucket: "app-arch-6c99b.firebasestorage.app",
+  messagingSenderId: "889952359187",
+  appId: "1:889952359187:web:27675fd48b6aba239a80e6",
+  measurementId: "G-Z92BFD8J1G"
 };
 
 // Initialize Firebase
@@ -20,10 +20,16 @@ const auth = getAuth(app);
 const functions = getFunctions(app);
 const db = getFirestore(app);
 
-if (import.meta.env.VITE_USE_EMULATORS === 'true') {
-  connectAuthEmulator(auth, "http://localhost:9099");
-  connectFunctionsEmulator(functions, "localhost", 5001);
-  connectFirestoreEmulator(db, "localhost", 8080);
+// Connect to emulators in development
+if (import.meta.env.DEV) {
+  try {
+    connectAuthEmulator(auth, "http://localhost:9099");
+    connectFunctionsEmulator(functions, "localhost", 5001);
+    connectFirestoreEmulator(db, "localhost", 8081);
+    console.log("✅ Conectado aos emuladores Firebase");
+  } catch (error) {
+    console.log("⚠️ Emuladores já conectados ou não disponíveis");
+  }
 }
 
 export { app, auth, db, functions };
