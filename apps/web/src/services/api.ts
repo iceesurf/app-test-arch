@@ -1,5 +1,5 @@
 import axios from "axios";
-import {auth} from "../firebase";
+import { auth } from "../firebase";
 
 const api = axios.create({
   baseURL: "/api",

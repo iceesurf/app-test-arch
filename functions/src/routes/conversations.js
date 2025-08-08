@@ -1,7 +1,7 @@
 const {getFirestore, FieldValue} = require("firebase-admin/firestore");
 
 /**
- * Envia mensagem via WhatsApp usando Meta Graph API
+ * Envia mensagem via WhatsApp usando credenciais do tenant
  * @param {Object} req - Request object
  * @param {Object} res - Response object
  */
@@ -13,15 +13,28 @@ async function sendMessageHandler(req, res) {
     }
 
     const db = getFirestore();
+    const tenantId = req.tenantId;
 
-    // Verificar se temos as credenciais do Meta
-    const metaToken = process.env.META_WHATSAPP_TOKEN;
-    const phoneNumberId = process.env.META_PHONE_NUMBER_ID;
+    // Buscar credenciais do tenant
+    const tenantDoc = await db
+        .collection("tenants")
+        .doc(tenantId)
+        .collection("settings")
+        .doc("integrations")
+        .get();
 
-    if (!metaToken || !phoneNumberId) {
-      console.warn("Meta WhatsApp credentials não configuradas, salvando apenas no Firestore");
+    if (!tenantDoc.exists) {
+      return res.status(404).json({ok: false, error: "Configurações do tenant não encontradas"});
+    }
+
+    const tenantData = tenantDoc.data();
+    const whatsappConfig = tenantData.whatsapp;
+
+    if (!whatsappConfig || !whatsappConfig.access_token || !whatsappConfig.phone_number_id) {
+      console.warn(`WhatsApp não configurado para tenant ${tenantId}, salvando apenas no Firestore`);
       await db.collection("conversations").doc(wa_id).set({
         status: "active",
+        tenantId: tenantId,
         updatedAt: FieldValue.serverTimestamp(),
       }, {merge: true});
       await db.collection("conversations").doc(wa_id).collection("messages").add({
@@ -29,15 +42,16 @@ async function sendMessageHandler(req, res) {
         type: "text",
         text,
         timestamp: FieldValue.serverTimestamp(),
+        tenantId: tenantId,
       });
-      return res.json({ok: true, message: "Salvo no Firestore (Meta não configurado)"});
+      return res.json({ok: true, message: "Salvo no Firestore (WhatsApp não configurado)"});
     }
 
-    // Enviar via Meta Graph API
-    const response = await fetch(`https://graph.facebook.com/v20.0/${phoneNumberId}/messages`, {
+    // Enviar via Meta Graph API usando credenciais do tenant
+    const response = await fetch(`https://graph.facebook.com/v20.0/${whatsappConfig.phone_number_id}/messages`, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${metaToken}`,
+        "Authorization": `Bearer ${whatsappConfig.access_token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -62,6 +76,7 @@ async function sendMessageHandler(req, res) {
     // Salvar no Firestore
     await db.collection("conversations").doc(wa_id).set({
       status: "active",
+      tenantId: tenantId,
       updatedAt: FieldValue.serverTimestamp(),
     }, {merge: true});
     await db.collection("conversations").doc(wa_id).collection("messages").add({
@@ -70,6 +85,7 @@ async function sendMessageHandler(req, res) {
       text,
       timestamp: FieldValue.serverTimestamp(),
       meta_message_id: result.messages && result.messages[0] ? result.messages[0].id : null,
+      tenantId: tenantId,
     });
 
     res.json({
@@ -83,8 +99,5 @@ async function sendMessageHandler(req, res) {
 }
 
 module.exports = {sendMessageHandler};
-
-
-
 
 

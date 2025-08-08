@@ -1,61 +1,102 @@
-const { getFirestore, FieldValue } = require('firebase-admin/firestore');
-const { executeFlow } = require('../flows/flowExecutor');
+const {getFirestore, FieldValue} = require("firebase-admin/firestore");
 
-function metaVerify(req, res) {
-  const mode = req.query['hub.mode'];
-  const token = req.query['hub.verify_token'];
-  const challenge = req.query['hub.challenge'];
-  const expected = process.env.META_WEBHOOK_VERIFY_TOKEN;
-  if (!expected) {
-    return res.status(500).send('META_WEBHOOK_VERIFY_TOKEN não configurado');
+/**
+ * Verificação do webhook Meta WhatsApp
+ */
+async function metaVerify(req, res) {
+  try {
+    const {tenant} = req.query;
+    const {hub_mode, hub_verify_token, hub_challenge} = req.query;
+    
+    if (!tenant) {
+      return res.status(400).json({error: "Parâmetro tenant obrigatório"});
+    }
+    
+    // Buscar verify_token do tenant
+    const db = getFirestore();
+    const tenantDoc = await db
+        .collection("tenants")
+        .doc(tenant)
+        .collection("settings")
+        .doc("integrations")
+        .get();
+    
+    if (!tenantDoc.exists) {
+      return res.status(404).json({error: "Tenant não encontrado"});
+    }
+    
+    const tenantData = tenantDoc.data();
+    const verifyToken = tenantData.whatsapp?.verify_token;
+    
+    if (hub_mode === "subscribe" && hub_verify_token === verifyToken) {
+      console.log("Webhook verificado para tenant:", tenant);
+      res.status(200).send(hub_challenge);
+    } else {
+      console.log("Falha na verificação do webhook para tenant:", tenant);
+      res.status(403).send("Forbidden");
+    }
+  } catch (error) {
+    console.error("Erro na verificação do webhook:", error);
+    res.status(500).json({error: error.message});
   }
-  if (mode === 'subscribe' && token === expected) {
-    return res.status(200).send(challenge);
-  }
-  return res.sendStatus(403);
 }
 
+/**
+ * Recebimento de mensagens do Meta WhatsApp
+ */
 async function metaReceive(req, res) {
   try {
-    const entry = req.body?.entry?.[0];
-    const change = entry?.changes?.[0]?.value;
-    const messages = change?.messages || [];
-    const db = getFirestore();
-    const defaultBotId = 'default-bot';
-
-    for (const m of messages) {
-      const wa_id = m.from;
-      const text = m.text?.body || '';
-      await db.collection('conversations').doc(wa_id).set({ status: 'active', updatedAt: FieldValue.serverTimestamp() }, { merge: true });
-      await db.collection('conversations').doc(wa_id).collection('messages').add({ direction: 'incoming', type: 'text', text, meta: m, timestamp: FieldValue.serverTimestamp() });
-
-      const bot = await db.collection('chatbots').doc(defaultBotId).get();
-      const activeVersion = bot.data()?.activeFlowVersion;
-      if (!activeVersion) continue;
-      const fv = await db.collection('chatbots').doc(defaultBotId).collection('flowVersions').doc(activeVersion).get();
-      const flowMap = fv.data()?.flowMap;
-      if (!flowMap) continue;
-
-      const onYield = async (payload) => {
-        if (payload.type === 'DELAY') {
-          await db.collection('paused_flows').add({
-            botId: defaultBotId, wa_id, flowVersionId: activeVersion,
-            nodeId: payload.nodeId, context: payload.context,
-            resumeAt: new Date(payload.resumeAt), createdAt: FieldValue.serverTimestamp(),
-          });
-        }
-      };
-
-      await executeFlow({ flowMap, event: { type: 'newMessage', wa_id, text }, context: { contact: { wa_id }, vars: {}, meta: {} }, onYield });
+    const {tenant} = req.query;
+    if (!tenant) {
+      return res.status(400).json({error: "Parâmetro tenant obrigatório"});
     }
-
-    res.json({ ok: true });
-  } catch (e) {
-    res.status(500).json({ ok: false, error: e.message });
+    
+    const {object, entry} = req.body;
+    
+    if (object !== "whatsapp_business_account") {
+      return res.status(200).send("OK");
+    }
+    
+    const db = getFirestore();
+    
+    for (const entryItem of entry) {
+      for (const change of entryItem.changes) {
+        if (change.value.messages && change.value.messages.length > 0) {
+          for (const message of change.value.messages) {
+            const wa_id = message.from;
+            const text = message.text?.body || "";
+            const timestamp = message.timestamp;
+            
+            // Salvar mensagem recebida
+            await db.collection("conversations").doc(wa_id).set({
+              status: "active",
+              tenantId: tenant,
+              updatedAt: FieldValue.serverTimestamp(),
+            }, {merge: true});
+            
+            await db.collection("conversations").doc(wa_id).collection("messages").add({
+              direction: "incoming",
+              type: "text",
+              text,
+              timestamp: new Date(timestamp * 1000),
+              meta_message_id: message.id,
+              tenantId: tenant,
+            });
+            
+            console.log(`Mensagem recebida de ${wa_id}: ${text}`);
+          }
+        }
+      }
+    }
+    
+    res.status(200).send("OK");
+  } catch (error) {
+    console.error("Erro no webhook Meta:", error);
+    res.status(500).json({error: error.message});
   }
 }
 
-module.exports = { metaVerify, metaReceive };
+module.exports = {metaVerify, metaReceive};
 
 
 

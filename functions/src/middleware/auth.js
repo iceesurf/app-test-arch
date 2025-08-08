@@ -29,10 +29,10 @@ async function authMiddleware(req, res, next) {
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     req.user = decodedToken;
-    
+
     // Derivar tenantId do usuário (simplificado por enquanto)
     req.tenantId = decodedToken.uid || "default-tenant";
-    
+
     next();
   } catch (error) {
     console.error("Erro na verificação do token:", error);
